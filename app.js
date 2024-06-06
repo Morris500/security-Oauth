@@ -40,7 +40,8 @@ mongoose.connect(url).then((result) => {console.log("database connected")})
 const Secretschema = new schema ({
     email: String,
     password: String,
-    googleId: String
+    googleId: String,
+    secret: String
 });
         //encryption plugin
 const secret = process.env.SECRET ;
@@ -116,13 +117,13 @@ app.get('/auth/facebook/secret',
     res.redirect('/secrets');
   });
 
-
-
+// Home route...
 app.route("/")
 .get((req, res)=> {
 res.render("home")
 });
 
+// login route...
 app.route("/login")
 .get((req, res)=> {
    res.render("login") 
@@ -144,14 +145,33 @@ req.login(user, function(err) {
 })   
 
  })
- app.get("/secrets", (req, res) =>{
-    if (req.isAuthenticated()) {
-        res.render("secrets");
-    } else {
-    res.redirect("/login")
-    }
- } );
+ // Secrets route...
+ app.get("/secrets", (req, res) => {
+User.find({"secret":{$ne: null}}).then((result) => {console.log(result)
+    res.render("secrets", { Data: result }) 
+   })
+.catch((err)=>console.log(err));
 
+ } );
+// Submit Route...
+app.route("/submit")
+.get((req, res) => {
+  if (req.isAuthenticated()) {
+    res.render("submit");
+} else {
+res.redirect("/login")
+}
+})
+.post((req, res) => {
+  console.log(req.user.id);
+   User.updateOne({_id:req.user.id},{$set: {secret: req.body.secret}}).then((result)=>{})
+   .catch((err)=> console.log(err));
+   
+   const secret = req.body.secret;
+   res.redirect("/secrets")
+  
+})
+ //Register Route...
 app.route("/register")
 .get((req, res)=> {
     
@@ -178,6 +198,8 @@ app.route("/register")
     }).catch((err)=>{res.redirect("/register")})
     
 });
+
+//Logout Route...
 app.get("/logout", function (req, res) {
       //req.logout();
     res.redirect("/");
