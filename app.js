@@ -147,10 +147,10 @@ req.login(user, function(err) {
  })
  // Secrets route...
  app.get("/secrets", (req, res) => {
-User.find({"secret":{$ne: null}}).then((result) => {console.log(result)
+User.find({"secret":{$ne: null}}).then((result) => {(result.forEach((file) => {console.log(file);}))
     res.render("secrets", { Data: result }) 
    })
-.catch((err)=>console.log(err));
+.catch((err)=>console.log(err))
 
  } );
 // Submit Route...
@@ -201,8 +201,8 @@ app.route("/register")
 
 //Logout Route...
 app.get("/logout", function (req, res) {
-      //req.logout();
-    res.redirect("/");
+      req.logout((logout)=> {res.redirect("/");});
+    
 });
 
 //  User.find({},{username:1, _id:0}).then((result)=> {//console.log(result)
