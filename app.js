@@ -79,12 +79,38 @@ passport.use(new GoogleStrategy({
    }
 ));
 
+passport.use(new FacebookStrategy({
+  clientID: process.env.CLIENT_FACEBOOK_ID,
+  clientSecret: process.env.CLIENT_FACEBOOK_SECRET,
+  callbackURL: "http://localhost:3000/auth/facebook/secret"
+},
+function(accessToken, refreshToken, profile, cb) {
+  console.log(profile.id);
+  User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+    return cb(err, user);
+  });
+}
+));
+
+
 // google authentication route
 app.get('/auth/google',
   passport.authenticate('google', { scope: ['profile'] })
 );
 app.get('/auth/secret', 
   passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/secrets');
+  });
+
+  // facebook authentication route
+app.get('/auth/facebook', 
+  passport.authenticate('facebook',{ scope: ['profile'] })
+);
+
+app.get('/auth/facebook/secret',
+  passport.authenticate('facebook', { failureRedirect: '/login' }),
   function(req, res) {
     // Successful authentication, redirect home.
     res.redirect('/secrets');
